@@ -1,0 +1,63 @@
+﻿//Get colors from the given location
+Put [[450,101],[972,791]] into rectImage //place rectangle around image 
+Put item 1 of rectImage into loc1
+Put item 2 of rectImage into loc2
+Put 10 into intX //increase/decrease pixels between dots and reads. the lower the number, the more dots
+Set listRect = []
+Put loc1 into locTemp
+Put 1 into intY
+//Set the KeyDownDelay to .25 //.001 for default 
+
+//Get points and colors
+Repeat
+	If locTemp.x > loc2.x //go down to the next line 
+		Put loc1+[0,intX*intY] into locTemp
+		Add 1 to intY
+		
+	Else if locTemp.y > loc2.y //exit, at the bottom
+		Exit Repeat
+		
+	Else //add points and colors
+		Insert  [locTemp] into listRect
+		Insert ColorAtLocation(locTemp) into listColor
+	End If
+	
+	Put locTemp+[intX,0] into locTemp
+
+End Repeat
+
+Log listRect
+Log listColor
+
+//Go to paint 
+Click "Paint/Icon_Paint_TaskBar"
+wait 5
+Put ImageLocation(Image:"Paint/Button_Paste", waitFor:10)+[0,100] into locCanvas
+Put item 1 of listRect into locAnchor
+
+Repeat with each item tempLoc of listRect
+	Put item repeatIndex() of listColor into tempColor
+	Put item 1 of tempColor into red
+	Put item 2 of tempColor into green
+	Put item 3 of tempColor into blue
+	
+	//if background is white, skip all whites
+	If red = 255 and green = 255 and blue =255 or red = green and green = blue
+		Next repeat
+	End If
+	
+	Click Image:"Paint/Button_EditColors", waitFor:10
+	
+	Put ImageRectangle(Image:"Paint/Button_Ok", waitFor:5) into rectAnchor
+	Put rectAnchor+[200,-100,400,0] into rectColors
+	
+	//get color in paint
+	Click text:"Red", SearchRectangle:rectColors, HotSpot:[40,10], hotSpotScaling:centerRight
+	TypeText controlKey & "a"
+	TypeText red, tabKey
+	TypeText green, tabKey
+	TypeText blue, returnKey
+	
+	Click locCanvas+(tempLoc-locAnchor)
+	
+End Repeat
